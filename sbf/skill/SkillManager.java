@@ -14,7 +14,7 @@ import scripts.sbf.concurrency.Threadsafe;
 import scripts.sbf.util.MFUtil;
 
 /**
- * Singleton for user-specific data retrieval. Creation based on eminent
+ * Singleton for skill-specific data retrieval. Creation based on eminent
  * frequency of skill related usage.
  * 
  * @author modulusfrank12
