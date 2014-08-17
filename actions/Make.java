@@ -28,8 +28,13 @@ public class Make extends Action {
 	public void execute() {
 		print("Making " + product.toLowerCase() + ".");
 		if (!itemToUse.contains("(unf)")) {
-			if (!(Inventory.find(itemToUse)[0].click("Use") && Inventory
-					.find(secondItemToUse)[0].click("Use")))
+			if(Inventory.find(itemToUse)[0].click("Use"))
+				this.abc.waitItemInteractionDelay();
+			else
+				return;
+			if(Inventory.find(secondItemToUse)[0].click("Use"))
+				this.abc.waitItemInteractionDelay();
+			else
 				return;
 		} else {
 			while (Globals.MAKE.getStatus()) {
