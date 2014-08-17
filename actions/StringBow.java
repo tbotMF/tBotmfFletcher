@@ -21,19 +21,19 @@ public class StringBow extends Action {
 	private final String product = selections.get("Product");
 	private final ABC abc = manager.getABC();
 
-	@Override
-	public void execute() {
-		print("Stringing " + product.toLowerCase() + ".");
-		
+	private boolean useBowString() {
 		if (Inventory.find("Bow string")[0].click("Use"))
 			this.abc.waitItemInteractionDelay();
 		else
-			return;
+			return false;
 		if (Inventory.find(product)[0].click("Use"))
 			this.abc.waitItemInteractionDelay();
 		else
-			return;
+			return false;
+		return true;
+	}
 
+	private boolean selectMakeAll() {
 		if (!Timing.waitCondition(new Condition() {
 
 			@Override
@@ -43,38 +43,52 @@ public class StringBow extends Action {
 			}
 
 		}, General.random(5000, 6000)))
-			return;
+			return false;
 
 		RSInterface stringingBow = skillManager.getChildInterfaceFor(
 				Interfaces.get(masterIndex), product.split(" [(]")[0]);
 
-		if (stringingBow == null)
-			return;
+		return stringingBow != null && stringingBow.click("Make All");
+	}
 
-		if (!stringingBow.click("Make All"))
-			return;
+	private void performAntiBan() {
+		this.abc.doAllIdleActions(SKILLS.FLETCHING, GameTab.TABS.INVENTORY);
+		this.abc.hoverNextObject("Bank");
+	}
 
-		if (!Timing.waitCondition(new Condition() {
+	private boolean updateFletchingLevel() {
+		if (Skills.getCurrentLevel(SKILLS.FLETCHING) > skillManager
+				.getCurrentLevel()) {
+			skillManager.updateCurrentLevel();
+			return true;
+		}
+		return false;
+	}
 
-			@Override
-			public boolean active() {
-				General.sleep(100, 200);
-				return Player.getAnimation() > -1;
-			}
+	@Override
+	public void execute() {
+		print("Stringing " + product.toLowerCase() + ".");
+		if (useBowString() && selectMakeAll())
+			if (!Timing.waitCondition(new Condition() {
 
-		}, General.random(3000, 4000)))
-			return;
+				@Override
+				public boolean active() {
+					General.sleep(100, 200);
+					return Player.getAnimation() > -1;
+				}
+
+			}, General.random(3000, 4000)))
+				return;
 		while (Inventory.getCount("Bow string") > 0
 				&& Inventory.getCount(product) > 0) {
 			General.sleep(100, 200);
-			this.abc.doAllIdleActions(SKILLS.FLETCHING, GameTab.TABS.INVENTORY);
-			this.abc.hoverNextObject("Bank");
-			if (Skills.getCurrentLevel(SKILLS.FLETCHING) > skillManager
-					.getCurrentLevel()) {
-				skillManager.updateCurrentLevel();
+			performAntiBan();
+			updateFletchingLevel();
+			if (updateFletchingLevel())
 				break;
-			}
+
 		}
+
 		SkillGlobals.SKILLING.setStatus(Inventory.getCount("Bow string") > 0
 				&& Inventory.getCount(product) > 0);
 
