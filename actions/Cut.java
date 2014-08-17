@@ -27,22 +27,20 @@ public class Cut extends Action {
 	private final ABC abc = manager.getABC();
 	private final String knife = "Knife";
 
-	@Override
-	public void execute() {
-		print("Cutting " + itemToUse.toLowerCase() + " to make "
-				+ itemToUse.toLowerCase().split(" ")[0] + " "
-				+ product.toLowerCase() + "s.");
-
+	private boolean useKnife() {
 		if (Inventory.find(knife)[0].click("Use"))
 			this.abc.waitItemInteractionDelay();
 		else
-			return;
+			return false;
 
 		if (Inventory.find(itemToUse)[0].click("Use"))
 			this.abc.waitItemInteractionDelay();
 		else
-			return;
+			return false;
+		return true;
+	}
 
+	private boolean selectMakeX() {
 		if (!Timing.waitCondition(new Condition() {
 			@Override
 			public boolean active() {
@@ -51,17 +49,15 @@ public class Cut extends Action {
 			}
 
 		}, General.random(3000, 4000)))
-			return;
+			return false;
 
 		RSInterface cutProduct = skillManager.getChildInterfaceFor(
 				Interfaces.get(skillManager.getMasterIndex()), product);
-		if (cutProduct == null)
-			return;
+		return cutProduct != null && cutProduct.click("Make X");
+	}
 
-		if (!cutProduct.click("Make X"))
-			return;
-
-		if (!Timing.waitCondition(new Condition() {
+	private boolean enterAmountToCut() {
+		if (Timing.waitCondition(new Condition() {
 
 			@Override
 			public boolean active() {
@@ -69,30 +65,49 @@ public class Cut extends Action {
 				return MFUtil.enterAmountIsOpen();
 			}
 
-		}, General.random(3000, 4000)))
-			return;
+		}, General.random(3000, 4000))) {
+			Keyboard.typeSend(String.valueOf(randomizeEnterAmount
+					.nextInt(90 - 27) + 27));
+			return true;
+		}
+		return false;
+	}
 
-		Keyboard.typeSend(String.valueOf(randomizeEnterAmount.nextInt(90 - 27) + 27));
+	private void performAntiBan() {
+		this.abc.doAllIdleActions(SKILLS.FLETCHING, GameTab.TABS.INVENTORY);
+		this.abc.hoverNextObject("Bank");
+	}
 
-		if (!Timing.waitCondition(new Condition() {
+	private boolean updateFletchingLevel() {
+		if (Skills.getCurrentLevel(SKILLS.FLETCHING) > skillManager
+				.getCurrentLevel()) {
+			skillManager.updateCurrentLevel();
+			return true;
+		}
+		return false;
+	}
 
-			@Override
-			public boolean active() {
-				General.sleep(100, 200);
-				return Player.getAnimation() > -1;
-			}
+	@Override
+	public void execute() {
+		print("Cutting " + itemToUse.toLowerCase() + " to make "
+				+ itemToUse.toLowerCase().split(" ")[0] + " "
+				+ product.toLowerCase() + "s.");
+		if (useKnife() && selectMakeX() && enterAmountToCut())
+			if (!Timing.waitCondition(new Condition() {
 
-		}, General.random(3000, 4000)))
-			return;
+				@Override
+				public boolean active() {
+					General.sleep(100, 200);
+					return Player.getAnimation() > -1;
+				}
+
+			}, General.random(3000, 4000)))
+				return;
 		while (Inventory.getCount(itemToUse) > 0) {
 			General.sleep(100, 200);
-			this.abc.doAllIdleActions(SKILLS.FLETCHING, GameTab.TABS.INVENTORY);
-			this.abc.hoverNextObject("Bank");
-			if (Skills.getCurrentLevel(SKILLS.FLETCHING) > skillManager
-					.getCurrentLevel()) {
-				skillManager.updateCurrentLevel();
+			performAntiBan();
+			if (updateFletchingLevel())
 				break;
-			}
 
 		}
 		SkillGlobals.SKILLING.setStatus(Inventory.getCount(itemToUse) > 0);
