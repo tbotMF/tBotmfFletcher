@@ -54,8 +54,8 @@ public class MFFletcher extends Script implements Painting {
 				- startTime);
 
 		g2d.setRenderingHints(rh);
-		g.setColor(Color.WHITE);
-		g.setFont(paintFont);
+		g2d.setColor(Color.WHITE);
+		g2d.setFont(paintFont);
 
 		g2d.drawString(
 				"Exp : "
@@ -73,12 +73,12 @@ public class MFFletcher extends Script implements Painting {
 		g2d.drawRect(0, 88, 150, 27);
 		g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,
 				0.5f));
-		g.setColor(Color.cyan);
-		g.fillRect(0, 30, 240, 27);
-		g.setColor(Color.orange);
-		g.fillRect(0, 58, 240, 27);
-		g.setColor(Color.green);
-		g.fillRect(0, 88, 150, 27);
+		g2d.setColor(Color.cyan);
+		g2d.fillRect(0, 30, 240, 27);
+		g2d.setColor(Color.orange);
+		g2d.fillRect(0, 58, 240, 27);
+		g2d.setColor(Color.green);
+		g2d.fillRect(0, 88, 150, 27);
 
 	}
 
