@@ -28,16 +28,18 @@ public class Cut extends Action {
 	private final String knife = "Knife";
 
 	private boolean useKnife() {
-		if (Inventory.find(knife)[0].click("Use"))
+		if (Inventory.find(knife)[0].click("Use")){
 			this.abc.waitItemInteractionDelay();
 		else
-			return false;
-
+		return false;
 		if (Inventory.find(itemToUse)[0].click("Use"))
 			this.abc.waitItemInteractionDelay();
-		else
-			return false;
+		else 
+		return false;
+		
+		}
 		return true;
+		
 	}
 
 	private boolean selectMakeX() {
