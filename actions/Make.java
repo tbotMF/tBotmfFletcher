@@ -24,18 +24,45 @@ public class Make extends Action {
 			.equalsIgnoreCase("Headless arrow") ? product.concat("tips")
 			: "Feather";
 
+	private boolean clickMakeTenSets() {
+		if (!Timing.waitCondition(new Condition() {
+
+			@Override
+			public boolean active() {
+				General.sleep(100, 200);
+				return Interfaces.get(masterIndex) != null;
+			}
+
+		}, General.random(5000, 6000)))
+			return false;
+		RSInterface makeProduct = skillManager.getChildInterfaceFor(
+				Interfaces.get(masterIndex), product);
+
+		return makeProduct != null && makeProduct.click("Make 10 sets");
+	}
+
+	private void performAntiBan() {
+		this.abc.doAllIdleActions(SKILLS.FLETCHING, GameTab.TABS.INVENTORY);
+		this.abc.hoverNextItem(itemToUse);
+	}
+
+	private boolean updateFletchingLevel() {
+		if (Skills.getCurrentLevel(SKILLS.FLETCHING) > skillManager
+				.getCurrentLevel()) {
+			skillManager.updateCurrentLevel();
+			return true;
+		}
+		return false;
+	}
+
 	@Override
 	public void execute() {
 		print("Making " + product.toLowerCase() + ".");
 		if (!itemToUse.contains("(unf)")) {
-			if(Inventory.find(itemToUse)[0].click("Use"))
-			this.abc.waitItemInteractionDelay();
-			else
-			return;
-			if(Inventory.find(secondItemToUse)[0].click("Use"))
-			this.abc.waitItemInteractionDelay();
-			else
-			return;
+			if (!(Inventory.find(itemToUse)[0].click("Use") && Inventory
+					.find(secondItemToUse)[0].click("Use")))
+				return;
+			
 		} else {
 			while (Globals.MAKE.getStatus()) {
 				Inventory.find(itemToUse)[0].click("Use");
@@ -51,41 +78,18 @@ public class Make extends Action {
 				Inventory.getCount(itemToUse),
 				Inventory.getCount(secondItemToUse))) ? itemToUse
 				: secondItemToUse;
-
-		if (!Timing.waitCondition(new Condition() {
-
-			@Override
-			public boolean active() {
+		if (clickMakeTenSets())
+			while (productCountInitial + 150 != Inventory.getCount(product)
+					&& Inventory.getCount(minInput) > 0) {
 				General.sleep(100, 200);
-				return Interfaces.get(masterIndex) != null;
+				performAntiBan();
+				if(updateFletchingLevel())
+					break;
+
 			}
-
-		}, General.random(5000, 6000)))
-			return;
-		RSInterface makeProduct = skillManager.getChildInterfaceFor(
-				Interfaces.get(masterIndex), product);
-
-		if (makeProduct == null)
-			return;
-
-		if (!makeProduct.click("Make 10 sets"))
-			return;
-
-		while (productCountInitial + 150 != Inventory.getCount(product)
-				&& Inventory.getCount(minInput) > 0) {
-			General.sleep(100, 200);
-			this.abc.doAllIdleActions(SKILLS.FLETCHING, GameTab.TABS.INVENTORY);
-			this.abc.hoverNextItem(itemToUse);
-			
-			if (Skills.getCurrentLevel(SKILLS.FLETCHING) > skillManager
-					.getCurrentLevel()) {
-				skillManager.updateCurrentLevel();
-				break;
-			}
-
-		}
-		if(Inventory.getCount(minInput) < 1)
+		if (Inventory.getCount(minInput) < 1)
 			this.abc.getABCUtil().BOOL_TRACKER.HOVER_NEXT.reset();
+
 		SkillGlobals.SKILLING.setStatus(Inventory.getCount(minInput) > 0);
 	}
 
