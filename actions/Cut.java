@@ -29,15 +29,14 @@ public class Cut extends Action {
 
 	private boolean useKnife() {
 		if (Inventory.find(knife)[0].click("Use")){
-			this.abc.waitItemInteractionDelay();
-		else
-		return false;
+		this.abc.waitItemInteractionDelay();
 		if (Inventory.find(itemToUse)[0].click("Use"))
 			this.abc.waitItemInteractionDelay();
 		else 
 		return false;
 		
-		}
+		}else
+		return false;
 		return true;
 		
 	}
