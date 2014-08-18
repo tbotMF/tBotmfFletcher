@@ -83,7 +83,6 @@ public class StringBow extends Action {
 				&& Inventory.getCount(product) > 0) {
 			General.sleep(100, 200);
 			performAntiBan();
-			updateFletchingLevel();
 			if (updateFletchingLevel())
 				break;
 
